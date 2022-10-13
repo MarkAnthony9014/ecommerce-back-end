@@ -6,14 +6,39 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // get all products
 router.get('/', (req, res) => {
   // find all products
+  Product.findAll({
+    include: [ Category, 
+      { model: Tag,
+    through: ProductTag} ]
+  })
+  .then(dbProductData => {
+    res.json(dbProductData);
+  })
+  .catch(err => {
+    res.status(400).json(err);
+  })
   // be sure to include its associated Category and Tag data
 });
 
 // get one product
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+  Product.findOne( {
+    where: {
+      id: req.params.id
+    },
+    include: [ Category, 
+      { model: Tag,
+        through: ProductTag }]
+  })
+  .then(dbProductData => {
+    res.json(dbProductData)
+    })
+  .catch(err => {
+    res.status(400).json(err);
+  });  
 });
+  // be sure to include its associated Category and Tag data
 
 // create new product
 router.post('/', (req, res) => {
@@ -35,6 +60,8 @@ router.post('/', (req, res) => {
             tag_id,
           };
         });
+        console.log(productTagIdArr)
+        
         return ProductTag.bulkCreate(productTagIdArr);
       }
       // if no product tags, just respond
